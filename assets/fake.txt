@@ -1,0 +1,172 @@
+{/* Modal add / edit / delete jour */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {modalType === "add" && (
+              <>
+                <Text style={styles.label}>Ajouter un jour</Text>
+                <View style={styles.dateField}>
+                  <TextInput
+                    value={selectedJour ? selectedJour.date : ""}
+                    placeholder="Choisir une date"
+                    placeholderTextColor={lightColors.textSecondary}
+                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                    editable={false}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setDateTarget("debut");
+                      setDateModalVisible(true);
+                    }}
+                    style={styles.iconBtn}
+                  >
+                    <Ionicons
+                      name="calendar"
+                      size={22}
+                      color={lightColors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={[
+                      styles.modalBtn,
+                      { backgroundColor: lightColors.border },
+                    ]}
+                  >
+                    <Text style={styles.modalBtnTextCancel}>Annuler</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleAddJour}
+                    style={[
+                      styles.modalBtn,
+                      { backgroundColor: lightColors.primary },
+                    ]}
+                  >
+                    <Text style={styles.modalBtnText}>Créer</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
+            {modalType === "edit" && (
+              <>
+                <Text style={styles.label}>Modifier ce jour</Text>
+                <View style={styles.dateField}>
+                  <TextInput
+                    value={dateDebut}
+                    placeholder="modifier la date"
+                    placeholderTextColor={lightColors.textSecondary}
+                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                    editable={false}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setDateTarget("edit");
+                      setDateModalVisible(true);
+                    }}
+                    style={styles.iconBtn}
+                  >
+                    <Ionicons
+                      name="calendar"
+                      size={22}
+                      color={lightColors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={[
+                      styles.modalBtn,
+                      { backgroundColor: lightColors.border },
+                    ]}
+                  >
+                    <Text style={styles.modalBtnTextCancel}>Annuler</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleUpdateJour}
+                    style={[
+                      styles.modalBtn,
+                      { backgroundColor: lightColors.primary },
+                    ]}
+                  >
+                    <Text style={styles.modalBtnText}>Modifier</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
+            {modalType === "delete" && selectedJour && (
+              <>
+                <Text style={[styles.modalTitle, { color: "#ff6b6b" }]}>
+                  Supprimer le jour
+                </Text>
+                <Text style={styles.modalDeleteText}>
+                  Êtes-vous sûr de vouloir supprimer le jour{" "}
+                  <Text style={{ fontWeight: "bold", color: lightColors.text }}>
+                    {selectedJour.date}
+                  </Text>
+                  ?
+                </Text>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={[
+                      styles.modalBtn,
+                      { backgroundColor: lightColors.border },
+                    ]}
+                  >
+                    <Text style={styles.modalBtnTextCancel}>Annuler</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleDeleteJour}
+                    style={[styles.modalBtn, { backgroundColor: "#ff6b6b" }]}
+                  >
+                    <Text style={styles.modalBtnText}>Supprimer</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Sélection Date */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalWrapper}>
+          <View style={styles.modalContent}>
+            <ReactNativeModernDatepicker
+              isGregorian
+              mode="calendar"
+              onDateChange={(date) => {
+                // if (dateTarget === "add") {
+                //   setModalDate(date);
+                // } else if (dateTarget === "edit") {
+                //   setModalDate(date);
+                // }
+                setModalDate(date);
+                setModalVisible(false);
+              }}
+              options={{
+                backgroundColor: "#fff",
+                mainColor: lightColors.primary,
+              }}
+              locale="fr"
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={{ color: lightColors.primary, fontWeight: "bold" }}>
+                Annuler
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>

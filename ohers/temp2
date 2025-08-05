@@ -1,0 +1,286 @@
+import { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  StatusBar,
+  Modal,
+  TextInput,
+  Pressable,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { lightColors } from "../themes/colors";
+
+// Images
+const slider1 = "../../assets/images/slider1.jpg";
+const slider2 = "../../assets/images/slider2.jpg";
+const slider3 = "../../assets/images/slider3.jpg";
+const rapportImage = "../assets/images/rap_img.jpg";
+const avatar = "../../assets/images/avatar.webp";
+
+const screenWidth = Dimensions.get("window").width;
+
+export default function HomeScreen() {
+  const rapportsInit = [
+    {
+      id: 1,
+      titre: "Rapport-1",
+      lieu: "Kpalimé",
+      dateDebut: "2025-06-01",
+      dateFin: "2025-06-10",
+      finish: false,
+    },
+    {
+      id: 2,
+      titre: "Rapport-2",
+      lieu: "Sokodé",
+      dateDebut: "2025-06-15",
+      dateFin: "2025-06-20",
+      finish: true,
+    },
+    {
+      id: 3,
+      titre: "Rapport-3",
+      lieu: "Lomé",
+      dateDebut: "2025-07-01",
+      dateFin: "2025-07-05",
+      finish: false,
+    },
+  ];
+
+  const [rapports, setRapports] = useState(rapportsInit);
+  const [filter, setFilter] = useState("ongoing");
+  const [expandedCard, setExpandedCard] = useState(null);
+
+  const [modalEditVisible, setModalEditVisible] = useState(false);
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
+
+  const [selectedRapport, setSelectedRapport] = useState(null);
+
+  const [editTitre, setEditTitre] = useState("");
+  const [editLieu, setEditLieu] = useState("");
+  const [editDateDebut, setEditDateDebut] = useState("");
+  const [editDateFin, setEditDateFin] = useState("");
+
+  const filteredRapports =
+    filter === "ongoing"
+      ? rapports.filter((r) => !r.finish)
+      : rapports.filter((r) => r.finish);
+
+  const sliderImages = [slider1, slider2, slider3];
+
+  const openEditModal = (item) => {
+    setSelectedRapport(item);
+    setEditTitre(item.titre);
+    setEditLieu(item.lieu);
+    setEditDateDebut(item.dateDebut);
+    setEditDateFin(item.dateFin);
+    setModalEditVisible(true);
+    setExpandedCard(null);
+  };
+
+  const saveEdit = () => {
+    if (
+      !editTitre.trim() ||
+      !editLieu.trim() ||
+      !editDateDebut.trim() ||
+      !editDateFin.trim()
+    ) {
+      alert("Veuillez remplir tous les champs");
+      return;
+    }
+    setRapports((prev) =>
+      prev.map((r) =>
+        r.id === selectedRapport.id
+          ? {
+              ...r,
+              titre: editTitre,
+              lieu: editLieu,
+              dateDebut: editDateDebut,
+              dateFin: editDateFin,
+            }
+          : r
+      )
+    );
+    setModalEditVisible(false);
+  };
+
+  const openConfirmModal = (item) => {
+    setSelectedRapport(item);
+    setModalConfirmVisible(true);
+    setExpandedCard(null);
+  };
+
+  const toggleFinishStatus = () => {
+    setRapports((prev) =>
+      prev.map((r) =>
+        r.id === selectedRapport.id ? { ...r, finish: !r.finish } : r
+      )
+    );
+    setModalConfirmVisible(false);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedRapport(item);
+    setModalDeleteVisible(true);
+    setExpandedCard(null);
+  };
+
+  const deleteRapport = () => {
+    setRapports((prev) => prev.filter((r) => r.id !== selectedRapport.id));
+    setModalDeleteVisible(false);
+  };
+
+  return (
+    <View className="flex-1 bg-[#E7F0FD]">
+      <StatusBar
+        backgroundColor={lightColors.primary}
+        barStyle="light-content"
+      />
+
+      {/* Header */}
+      <View className="flex-row justify-between items-center pt-14 px-5 pb-2 bg-[#E7F0FD]">
+        <Text className="text-[28px] font-extrabold text-[#6495ED]">Dalyo</Text>
+        <TouchableOpacity>
+          <Image source={avatar} className="w-10 h-10 rounded-full" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        {/* Slider */}
+        <FlatList
+          data={sliderImages}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          className="mt-2"
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <Image
+              source={item}
+              className="mx-2 rounded-xl"
+              style={{ width: screenWidth * 0.85, height: 180 }}
+              resizeMode="cover"
+            />
+          )}
+        />
+
+        {/* Section title */}
+        <Text className="text-xl font-bold text-[#1F1F1F] mx-5 mt-4 mb-2">
+          Mes Rapports
+        </Text>
+
+        {/* Filter buttons */}
+        <View className="flex-row justify-between mx-5 mb-3">
+          <TouchableOpacity
+            className={`flex-1 py-2 rounded-full mx-1 items-center ${
+              filter === "ongoing" ? "bg-[#6495ED]" : "bg-[#E0E0E0]"
+            }`}
+            onPress={() => setFilter("ongoing")}
+          >
+            <Text
+              className={`${filter === "ongoing" ? "text-white" : "text-[#7A7A7A]"} font-semibold`}
+            >
+              En cours
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className={`flex-1 py-2 rounded-full mx-1 items-center ${
+              filter === "finished" ? "bg-[#6495ED]" : "bg-[#E0E0E0]"
+            }`}
+            onPress={() => setFilter("finished")}
+          >
+            <Text
+              className={`${filter === "finished" ? "text-white" : "text-[#7A7A7A]"} font-semibold`}
+            >
+              Terminés
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Rapport cards */}
+        {filteredRapports.map((item) => (
+          <View
+            key={item.id}
+            className="bg-white rounded-2xl mx-5 mb-5 shadow-sm overflow-hidden"
+          >
+            <Image
+              source={rapportImage}
+              className="w-full h-32"
+              resizeMode="cover"
+            />
+            <View className="p-4">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-lg font-bold text-[#1F1F1F]">
+                  {item.titre}
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    setExpandedCard(expandedCard === item.id ? null : item.id)
+                  }
+                >
+                  <Ionicons
+                    name="ellipsis-horizontal"
+                    size={22}
+                    color="#7A7A7A"
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text className="text-sm text-[#7A7A7A] mt-1">{item.lieu}</Text>
+              <Text className="text-xs text-[#7A7A7A] mt-1">
+                {item.dateDebut} - {item.dateFin}
+              </Text>
+
+              {expandedCard === item.id && (
+                <View className="mt-3">
+                  <TouchableOpacity
+                    className="py-2 rounded-lg mb-2 items-center bg-yellow-100"
+                    onPress={() => openEditModal(item)}
+                  >
+                    <Text className="font-semibold text-yellow-500">
+                      Modifier
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className={`py-2 rounded-lg mb-2 items-center ${item.finish ? "bg-blue-100" : "bg-green-100"}`}
+                    onPress={() => openConfirmModal(item)}
+                  >
+                    <Text
+                      className={`font-semibold ${item.finish ? "text-blue-500" : "text-green-600"}`}
+                    >
+                      {item.finish ? "Mettre en cours" : "Terminer"}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="py-2 rounded-lg mb-2 items-center bg-red-100"
+                    onPress={() => openDeleteModal(item)}
+                  >
+                    <Text className="font-semibold text-red-500">
+                      Supprimer
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* FAB */}
+      <TouchableOpacity className="absolute right-5 bottom-6 bg-[#6495ED] w-14 h-14 rounded-full justify-center items-center shadow-md">
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Modals... */}
+      {/* Même structure, tu peux aussi convertir les modales en classes NativeWind sur demande */}
+    </View>
+  );
+}
