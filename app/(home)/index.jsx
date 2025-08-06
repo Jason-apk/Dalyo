@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -15,7 +16,6 @@ import {
   View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import DatePicker from "react-native-modern-datepicker";
 import HomeHead from "../../components/homehead";
 import RapportCards from "../../components/rapportCards";
 import SliderSection from "../../components/sliderSection";
@@ -40,13 +40,12 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("ongoing");
   const [fabModalVisible, setFabModalVisible] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [datepickModal, setDatepickModal] = useState(false);
   const [dateTarget, setDateTarget] = useState(null);
   const [titre, setTitre] = useState("");
   const [lieu, setLieu] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
-  const [datePickerKey, setDatePickerKey] = useState(0);
 
   const sliderImages = [slider1, slider2, slider3];
 
@@ -65,6 +64,20 @@ export default function HomeScreen() {
       setAvatarUrl(require("../../assets/images/avatar.webp"));
     }
   }, [user?.avatar]);
+
+  const openDatePicker = () => {
+    setDatepickModal(true);
+  };
+
+  const handleSetDates = (event, selectedDate) => {
+    const currentDate = selectedDate || new Date();
+    setDatepickModal(false);
+    if (dateTarget === "debut") {
+      setDateDebut(currentDate.toISOString().split("T")[0]);
+    } else if (dateTarget === "fin") {
+      setDateFin(currentDate.toISOString().split("T")[0]);
+    }
+  };
 
   const fetchRapports = async (userId) => {
     setLoading(true);
@@ -230,137 +243,6 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       {/* Modal Ajout Rapport */}
-      {/* <Modal
-        onRequestClose={() => setFabModalVisible(false)}
-        visible={fabModalVisible}
-        animationType="slide"
-        transparent
-      >
-        <View style={styles.overlay}>
-          <View style={styles.modal}>
-            <Text style={styles.title}>
-              <Ionicons
-                name="document-text-outline"
-                size={22}
-                color={lightColors.primary}
-              />{" "}
-              Nouveau Rapport
-            </Text>
-
-            <View style={styles.inputRow}>
-              <Ionicons
-                name="text-outline"
-                size={20}
-                color={lightColors.icon}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                placeholder="Titre"
-                placeholderTextColor={lightColors.textSecondary}
-                value={titre}
-                onChangeText={setTitre}
-                style={styles.input}
-              />
-            </View>
-            <View style={styles.inputRow}>
-              <Ionicons
-                name="location-outline"
-                size={20}
-                color={lightColors.icon}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                placeholder="Lieu"
-                placeholderTextColor={lightColors.textSecondary}
-                value={lieu}
-                onChangeText={setLieu}
-                style={styles.input}
-              />
-            </View>
-
-            <Text style={styles.label}>Date de début</Text>
-            <View style={styles.dateField}>
-              <TextInput
-                value={dateDebut}
-                placeholder="Choisir une date"
-                placeholderTextColor={lightColors.textSecondary}
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                editable={false}
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  setDateTarget("debut");
-                  setModalVisible(true);
-                }}
-                style={styles.iconBtn}
-              >
-                <Ionicons
-                  name="calendar"
-                  size={22}
-                  color={lightColors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={[styles.label, { marginTop: 12 }]}>
-              Date de fin (optionnelle)
-            </Text>
-            <View style={styles.dateField}>
-              <TextInput
-                value={dateFin}
-                placeholder="Choisir une date"
-                placeholderTextColor={lightColors.textSecondary}
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                editable={false}
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  setDateTarget("fin");
-                  setModalVisible(true);
-                }}
-                style={styles.iconBtn}
-              >
-                <Ionicons
-                  name="calendar"
-                  size={22}
-                  color={lightColors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSubmit}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="save-outline"
-                size={20}
-                color="#fff"
-                style={{ marginRight: 6 }}
-              />
-              <Text style={styles.buttonText}>Créer</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                setFabModalVisible(false);
-                resetForm();
-              }}
-              style={styles.cancelBtn}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="close-outline"
-                size={18}
-                color={lightColors.textSecondary}
-                style={{ marginRight: 4 }}
-              />
-              <Text style={styles.cancel}>Annuler</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal> */}
 
       <Modal
         onRequestClose={() => setFabModalVisible(false)}
@@ -436,9 +318,8 @@ export default function HomeScreen() {
                   />
                   <TouchableOpacity
                     onPress={() => {
-                      setDatePickerKey((prev) => prev + 1); // <-- ajout ici
                       setDateTarget("debut");
-                      setModalVisible(true);
+                      openDatePicker();
                     }}
                     style={styles.iconBtn}
                   >
@@ -464,9 +345,8 @@ export default function HomeScreen() {
                   />
                   <TouchableOpacity
                     onPress={() => {
-                      setDatePickerKey((prev) => prev + 1); // <-- ajout ici
                       setDateTarget("fin");
-                      setModalVisible(true);
+                      openDatePicker();
                     }}
                     style={styles.iconBtn}
                   >
@@ -517,38 +397,16 @@ export default function HomeScreen() {
       </Modal>
 
       {/* Modal Sélection Date */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalWrapper}>
-          <View style={styles.modalContent}>
-            <DatePicker
-              key={datePickerKey} // <-- TRÈS IMPORTANT
-              isGregorian
-              mode="calendar"
-              onDateChange={(date) => {
-                if (dateTarget === "debut") {
-                  setDateDebut(date);
-                } else if (dateTarget === "fin") {
-                  setDateFin(date);
-                }
-                setModalVisible(false);
-              }}
-              options={{
-                backgroundColor: "#fff",
-                mainColor: lightColors.primary,
-              }}
-              locale="fr"
-            />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={{ color: lightColors.primary, fontWeight: "bold" }}>
-                Annuler
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      {datepickModal && (
+        <DateTimePicker
+          value={new Date()}
+          mode="date"
+          locale="fr"
+          display="default"
+          dateFormat="dayofweek day month"
+          onChange={handleSetDates}
+        />
+      )}
     </View>
   );
 }

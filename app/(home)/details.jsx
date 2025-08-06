@@ -11,15 +11,11 @@ import {
   Image,
   Modal,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Datepicker from "react-native-modern-datepicker";
-
 import AudiosSection from "../../components/audiosSection";
 import CustomHeader from "../../components/customHeader";
 import HeaderRapport from "../../components/headerRapport";
@@ -43,17 +39,11 @@ export default function RapportDetails() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState("");
-  const [editModalDate, setEditModalDate] = useState("");
-  const [addModalDate, setAddModalDate] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [images, setImages] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState(null);
   const [refreshAudiosTrigger, setRefreshAudiosTrigger] = useState(0);
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [actionTarget, setActionTarget] = useState("");
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   // Ajout d'une ref pour le ScrollView
   const scrollRef = useRef();
@@ -89,12 +79,12 @@ export default function RapportDetails() {
     }
   };
 
-  const handleAddJour = async () => {
-    if (!addModalDate) return;
+  const handleAddJour = async (date) => {
+    if (!date) return;
 
     const { data, error } = await supabase
       .from("rapportJours")
-      .insert([{ date: addModalDate, rapport: id }])
+      .insert([{ date: date, rapport: id }])
       .select();
 
     if (error) {
@@ -106,16 +96,16 @@ export default function RapportDetails() {
         setTexte(data[0].texte || "");
       }
       //setModalVisible(false);
-      setAddModalDate("");
+      setDate("");
     }
   };
 
-  const handleUpdateJour = async () => {
-    if (!editModalDate || !selectedJour) return;
+  const handleUpdateJour = async (newDate) => {
+    if (!newDate || !selectedJour) return;
 
     const { data, error } = await supabase
       .from("rapportJours")
-      .update({ date: editModalDate })
+      .update({ date: newDate })
       .eq("id", selectedJour.id)
       .select();
 
@@ -127,7 +117,6 @@ export default function RapportDetails() {
         setSelectedJour(data[0]);
       }
       setModalVisible(false);
-      setEditModalDate("");
     }
   };
 
@@ -379,11 +368,6 @@ export default function RapportDetails() {
         keyboardOpeningTime={0}
         showsVerticalScrollIndicator={false}
       >
-        {/* <ScrollView
-                ref={scrollRef}
-                contentContainerStyle={styles.scrollContent}
-                keyboardShouldPersistTaps="handled"
-              > */}
         <HeaderRapport
           navigation={router}
           id={id}
@@ -402,13 +386,9 @@ export default function RapportDetails() {
             setTexte(jour.texte || "");
             setIsModified(false);
           }}
-          setModalType={setModalType}
-          setModalVisible={setModalVisible}
-          setEditModalDate={setEditModalDate}
-          setAddModalDate={setAddModalDate}
-          setActionTarget={setActionTarget}
-          setDateModalVisible={setDateModalVisible}
           handleAddJour={handleAddJour}
+          handleUpdateJour={handleUpdateJour}
+          handleDeleteJour={handleDeleteJour}
         />
 
         <TabsRow activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -454,174 +434,6 @@ export default function RapportDetails() {
             />
           </View>
         </TouchableWithoutFeedback>
-      </Modal>
-
-      {/* Modal  edit / delete jour */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {modalType === "edit" && (
-              <>
-                <Text style={styles.label}>Modifier ce jour</Text>
-                <View style={styles.dateField}>
-                  <TextInput
-                    value={editModalDate}
-                    placeholder="modifier la date"
-                    placeholderTextColor={lightColors.textSecondary}
-                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                    editable={false}
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      setActionTarget("edit");
-                      setDateModalVisible(true);
-                    }}
-                    style={styles.iconBtn}
-                  >
-                    <Ionicons
-                      name="calendar"
-                      size={22}
-                      color={lightColors.primary}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    onPress={() => setModalVisible(false)}
-                    style={[
-                      styles.modalBtn,
-                      { backgroundColor: lightColors.border },
-                    ]}
-                  >
-                    <Text style={styles.modalBtnTextCancel}>Annuler</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleUpdateJour}
-                    style={[
-                      styles.modalBtn,
-                      { backgroundColor: lightColors.primary },
-                    ]}
-                  >
-                    <Text style={styles.modalBtnText}>Modifier</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-
-            {modalType === "delete" && selectedJour && (
-              <>
-                <Text style={[styles.modalTitle, { color: "#ff6b6b" }]}>
-                  Supprimer le jour
-                </Text>
-                <Text style={styles.modalDeleteText}>
-                  Êtes-vous sûr de vouloir supprimer le jour{" "}
-                  <Text style={{ fontWeight: "bold", color: lightColors.text }}>
-                    {selectedJour.date}
-                  </Text>
-                  ?
-                </Text>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    onPress={() => setModalVisible(false)}
-                    style={[
-                      styles.modalBtn,
-                      { backgroundColor: lightColors.border },
-                    ]}
-                  >
-                    <Text style={styles.modalBtnTextCancel}>Annuler</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleDeleteJour}
-                    style={[styles.modalBtn, { backgroundColor: "#ff6b6b" }]}
-                  >
-                    <Text style={styles.modalBtnText}>Supprimer</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal Sélection Date */}
-      <Modal visible={dateModalVisible} transparent animationType="slide">
-        <View style={styles.modalWrapper}>
-          <View style={styles.modalContent}>
-            <Datepicker
-              isGregorian
-              mode="calendar"
-              onSelectedChange={(date) => {
-                if (actionTarget === "add") {
-                  setAddModalDate(date);
-
-                  //onPress = { handleAddJour };
-                } else if (actionTarget === "edit") {
-                  setEditModalDate(date);
-                  setDateModalVisible(false);
-                }
-                //setModalVisible(false);
-              }}
-              onDateChange={(date) => {
-                if (actionTarget === "add") {
-                  setAddModalDate(date);
-                  console.log("Date ajoutée:", date);
-
-                  //onPress = { handleAddJour };
-                } else if (actionTarget === "edit") {
-                  setEditModalDate(date);
-                  setDateModalVisible(false);
-                }
-                //setModalVisible(false);
-              }}
-              options={{
-                backgroundColor: "#fff",
-                mainColor: lightColors.primary,
-              }}
-              locale="fr"
-            />
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                width: "100%",
-                gap: 10,
-              }}
-            >
-              {addModalDate && (
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => {
-                    setDateModalVisible(false);
-                  }}
-                >
-                  <Text
-                    style={{ color: lightColors.primary, fontWeight: "bold" }}
-                  >
-                    Valider
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={[
-                  styles.closeButton,
-                  { width: addModalDate ? "50%" : "100%" },
-                ]}
-                onPress={() => {
-                  setAddModalDate("");
-                  setDateModalVisible(false);
-                }}
-              >
-                <Text style={{ color: "red", fontWeight: "bold" }}>
-                  Annuler
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
       </Modal>
 
       {/* FAB pour images */}
